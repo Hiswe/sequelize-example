@@ -1,0 +1,4 @@
+{
+  "database": "postgres://localhost:5432/sequelize-example",
+  "logQuery": true
+}

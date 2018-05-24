@@ -1,0 +1,5 @@
+{
+  "script": "index.js",
+  "ext":    "js",
+  "watch":  [ "router.js", "index.js", ".sequelizeexamplerc" ]
+}
