@@ -29,7 +29,8 @@ const COUNT_ITEMS = squel
   // don't use squel `autoQuoteAliasNames`
   // • isn't reliable enough for our sub-queries
   .select({ autoQuoteAliasNames: false })
-  .field(`COUNT(*)`)
+  // force integer on count
+  .field(`CAST(COUNT(*) AS int)`)
   .where(ITEM_RELATION)
   .from(...ITEM_ALIAS);
 
