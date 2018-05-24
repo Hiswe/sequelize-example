@@ -49,7 +49,15 @@ router.get(`/`, async (ctx, next) => {
   const { Basket } = ctx;
   const basket = await Basket.findOne({
     where: { name: `fruits` },
-    include: [Basket.Items]
+    attributes: {
+      exclude: [
+        `createdAt`, `updatedAt`,
+      ]
+    },
+    include: [{
+      association: Basket.Items,
+      attributes: [`id`, `name`, `price`],
+    }]
   });
   ctx.body = basket;
 });
@@ -62,9 +70,15 @@ router.get(`/count-and-sum`, async (ctx, next) => {
       include: [
         [toLiteral(COUNT_ITEMS), `itemsCount`],
         [toLiteral(SUM_ITEMS), `totalPrice`]
+      ],
+      exclude: [
+        `createdAt`, `updatedAt`,
       ]
     },
-    include: [Basket.Items]
+    include: [{
+      association: Basket.Items,
+      attributes: [`id`, `name`, `price`],
+    }]
   });
   ctx.body = basket;
 });
