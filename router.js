@@ -11,13 +11,14 @@ const router = new Router();
 
 //----- HELPERS
 
+// for POSTGRE to be happy
 // add double quote around field names
 // • quotation.customerId => "quotation"."customerId"
-// • for POSTGRE to be happy
 const fieldReg = /([a-zA-Z]*)\.([a-zA-Z]*)/g;
 const quote = txt => txt.replace(fieldReg, `"$1"."$2"`);
-// make a sequelize literal for Sequelize to be happy :D
+// make a Sequelize literal for Sequelize to be happy :D
 // • and also wrap the query inside parenthesis
+//   or the AS will fail
 const toLiteral = query => Sequelize.literal(`(${query.toString()})`);
 
 //----- SUB-QUERIES
