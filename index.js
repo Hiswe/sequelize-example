@@ -56,31 +56,39 @@ const sequelize = new Sequelize(config.database, {
   operatorsAliases
 });
 
-const Basket = sequelize.define(`basket`, {
-  id: {
-    type: Sequelize.UUID,
-    defaultValue: Sequelize.UUIDV4,
-    primaryKey: true
+const Basket = sequelize.define(
+  `basket`,
+  {
+    id: {
+      type: Sequelize.UUID,
+      defaultValue: Sequelize.UUIDV4,
+      primaryKey: true
+    },
+    name: {
+      type: Sequelize.STRING
+    }
   },
-  name: {
-    type: Sequelize.STRING
-  }
-});
+  { timestamps: false }
+);
 
-const Item = sequelize.define(`item`, {
-  id: {
-    type: Sequelize.UUID,
-    defaultValue: Sequelize.UUIDV4,
-    primaryKey: true
+const Item = sequelize.define(
+  `item`,
+  {
+    id: {
+      type: Sequelize.UUID,
+      defaultValue: Sequelize.UUIDV4,
+      primaryKey: true
+    },
+    name: {
+      type: Sequelize.STRING
+    },
+    price: {
+      type: Sequelize.FLOAT,
+      allowNull: false
+    }
   },
-  name: {
-    type: Sequelize.STRING
-  },
-  price: {
-    type: Sequelize.FLOAT,
-    allowNull: false
-  }
-});
+  { timestamps: false }
+);
 
 Item.Basket = Item.belongsTo(Basket);
 Basket.Items = Basket.hasMany(Item);
@@ -114,17 +122,39 @@ sequelize
     });
   })
   .then(() => {
-    return Basket.create(
+    const fruitBasket = Basket.create(
       {
         name: `fruits`,
         items: [
           {
             name: `apples`,
-            price: 20
+            price: 17.3
           },
           {
             name: `bananas`,
-            price: 35
+            price: 22.5
+          }
+        ]
+      },
+      {
+        include: [Basket.Items]
+      }
+    );
+    const toyBasket = Basket.create(
+      {
+        name: `toys`,
+        items: [
+          {
+            name: `LEGO Scooby Doo Build Your Own Mystery Machine`,
+            price: 49
+          },
+          {
+            name: `Harry Potter Hogwarts Battle`,
+            price: 37
+          },
+          {
+            name: `Nerf N-Strike Elite Terrascout Remote Control Drone Blaste`,
+            price: 175
           }
         ]
       },

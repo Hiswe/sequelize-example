@@ -6,7 +6,29 @@ const squel = require("squel").useFlavour("postgres");
 const router = new Router();
 
 //////
-// DB HELPERS
+// USING RELATIONS
+//////
+
+router.get(`/`, async (ctx, next) => {
+  const { Basket } = ctx;
+  const baskets = await Basket.findAll({
+    include: [Basket.Items]
+  });
+  const result = baskets.map( basket => {
+    const withCount = basket.toJSON();
+    withCount.itemsCount = withCount.items.length;
+    withCount.totalPrice = withCount.items.reduce(
+      (total, item) => total + item.price,
+      0
+    );
+    delete withCount.items
+    return withCount
+  })
+  ctx.body = result;
+});
+
+//////
+// SUB-QUERIES
 //////
 
 //----- HELPERS
@@ -21,7 +43,7 @@ const quote = txt => txt.replace(fieldReg, `"$1"."$2"`);
 //   or the AS will fail
 const toLiteral = query => Sequelize.literal(`(${query.toString()})`);
 
-//----- SUB-QUERIES
+//----- SQUEL
 
 const ITEM_RELATION = quote(`item.basketId = basket.id`);
 const ITEM_ALIAS = [`items`, `item`];
@@ -41,44 +63,17 @@ const SUM_ITEMS = squel
   .where(ITEM_RELATION)
   .from(...ITEM_ALIAS);
 
-//////
-// ROUTING
-//////
+//----- SQUEL
 
-router.get(`/`, async (ctx, next) => {
+router.get(`/sub-queries`, async (ctx, next) => {
   const { Basket } = ctx;
-  const basket = await Basket.findOne({
-    where: { name: `fruits` },
-    attributes: {
-      exclude: [
-        `createdAt`, `updatedAt`,
-      ]
-    },
-    include: [{
-      association: Basket.Items,
-      attributes: [`id`, `name`, `price`],
-    }]
-  });
-  ctx.body = basket;
-});
-
-router.get(`/count-and-sum`, async (ctx, next) => {
-  const { Basket } = ctx;
-  const basket = await Basket.findOne({
-    where: { name: `fruits` },
+  const basket = await Basket.findAll({
     attributes: {
       include: [
         [toLiteral(COUNT_ITEMS), `itemsCount`],
         [toLiteral(SUM_ITEMS), `totalPrice`]
-      ],
-      exclude: [
-        `createdAt`, `updatedAt`,
       ]
-    },
-    include: [{
-      association: Basket.Items,
-      attributes: [`id`, `name`, `price`],
-    }]
+    }
   });
   ctx.body = basket;
 });
