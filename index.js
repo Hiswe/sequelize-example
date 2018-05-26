@@ -162,6 +162,7 @@ sequelize
         include: [Basket.Items]
       }
     );
+    return Promise.all([fruitBasket, toyBasket]);
   })
   .then(() => {
     return getPort({ port: config.PORT });
