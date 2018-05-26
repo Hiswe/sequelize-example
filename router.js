@@ -14,16 +14,16 @@ router.get(`/`, async (ctx, next) => {
   const baskets = await Basket.findAll({
     include: [Basket.Items]
   });
-  const result = baskets.map( basket => {
+  const result = baskets.map(basket => {
     const withCount = basket.toJSON();
     withCount.itemsCount = withCount.items.length;
     withCount.totalPrice = withCount.items.reduce(
       (total, item) => total + item.price,
       0
     );
-    delete withCount.items
-    return withCount
-  })
+    delete withCount.items;
+    return withCount;
+  });
   ctx.body = result;
 });
 
@@ -41,11 +41,11 @@ const quote = txt => txt.replace(fieldReg, `"$1"."$2"`);
 // make a Sequelize literal for Sequelize to be happy :D
 // • and also wrap the query inside parenthesis
 //   or the AS will fail
-const toLiteral = query => Sequelize.literal(`(${query.toString()})`);
+const toLiteral = query => Sequelize.literal(`(${quote(query.toString())})`);
 
 //----- SQUEL
 
-const ITEM_RELATION = quote(`item.basketId = basket.id`);
+const ITEM_RELATION = `item.basketId = basket.id`;
 const ITEM_ALIAS = [`items`, `item`];
 
 const COUNT_ITEMS = squel
@@ -59,11 +59,11 @@ const COUNT_ITEMS = squel
 
 const SUM_ITEMS = squel
   .select({ autoQuoteAliasNames: false })
-  .field(quote(`SUM(item.price)`))
+  .field(`SUM(item.price)`)
   .where(ITEM_RELATION)
   .from(...ITEM_ALIAS);
 
-//----- SQUEL
+//----- ROUTE
 
 router.get(`/sub-queries`, async (ctx, next) => {
   const { Basket } = ctx;
@@ -73,6 +73,40 @@ router.get(`/sub-queries`, async (ctx, next) => {
         [toLiteral(COUNT_ITEMS), `itemsCount`],
         [toLiteral(SUM_ITEMS), `totalPrice`]
       ]
+    }
+  });
+  ctx.body = basket;
+});
+
+//----- SQUEL WITH A LEANER WRITING
+
+const subQuery = ({ field, parent, relation }) => {
+  return toLiteral(
+    squel
+      .select({ autoQuoteAliasNames: false })
+      .field(field)
+      .where(`${relation}.${parent}Id = ${parent}.id`)
+      .from(`${relation}s`, relation)
+  );
+};
+
+const GENERATED_COUNT = subQuery({
+  field: `CAST(COUNT(*) AS int)`,
+  parent: `basket`,
+  relation: `item`
+});
+
+const GENERATED_SUM = subQuery({
+  field: `SUM(item.price)`,
+  parent: `basket`,
+  relation: `item`
+});
+
+router.get(`/generated-sub-queries`, async (ctx, next) => {
+  const { Basket } = ctx;
+  const basket = await Basket.findAll({
+    attributes: {
+      include: [[GENERATED_COUNT, `itemsCount`], [GENERATED_SUM, `totalPrice`]]
     }
   });
   ctx.body = basket;
