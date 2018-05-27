@@ -31,3 +31,13 @@ http://localhost:3000/baskets
 http://localhost:3000/baskets/squel
 http://localhost:3000/baskets/generated-squel
 
+## tweaking the configuration
+
+This app use [rc](https://www.npmjs.com/package/rc) for handling configuration
+
+Just duplicate `.sequelizeexample-example` to `.sequelizeexample` and change the values:
+
+- `database`: the full url of your database
+  *default*: `postgres://localhost:5432/sequelize-example`
+- `logQuery`: if you want to print the SQL queries
+  *default*: `false`

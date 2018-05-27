@@ -71,8 +71,6 @@ const SUM_ITEMS = squel
   .where(ITEM_RELATION)
   .from(...ITEM_ALIAS);
 
-//----- ROUTE
-
 router.get(`/baskets/squel`, async (ctx, next) => {
   const { Basket } = ctx;
   const basket = await Basket.findAll({
