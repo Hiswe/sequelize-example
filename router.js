@@ -5,11 +5,19 @@ const Sequelize = require("sequelize");
 const squel = require("squel").useFlavour("postgres");
 const router = new Router();
 
+router.get(`/`, async (ctx, next) => {
+  ctx.body = {
+    "http://localhost:3000/baskets": `example with COUNT & SUM done server side`,
+    "http://localhost:3000/baskets/squel": `example with COUNT & SUM done SQL side`,
+    "http://localhost:3000/baskets/generated-squel": `example with COUNT & SUM done SQL side`
+  };
+});
+
 //////
 // USING RELATIONS
 //////
 
-router.get(`/`, async (ctx, next) => {
+router.get(`/baskets`, async (ctx, next) => {
   const { Basket } = ctx;
   const baskets = await Basket.findAll({
     include: [Basket.Items]
@@ -65,7 +73,7 @@ const SUM_ITEMS = squel
 
 //----- ROUTE
 
-router.get(`/sub-queries`, async (ctx, next) => {
+router.get(`/baskets/squel`, async (ctx, next) => {
   const { Basket } = ctx;
   const basket = await Basket.findAll({
     attributes: {
@@ -80,29 +88,29 @@ router.get(`/sub-queries`, async (ctx, next) => {
 
 //----- SQUEL WITH A LEANER WRITING
 
-const subQuery = ({ field, parent, relation }) => {
-  return toLiteral(
-    squel
-      .select({ autoQuoteAliasNames: false })
-      .field(field)
-      .where(`${relation}.${parent}Id = ${parent}.id`)
-      .from(`${relation}s`, relation)
-  );
+const subQuery = ({ field, model, relation }) => {
+  const query = squel
+    .select({ autoQuoteAliasNames: false })
+    .field(field)
+    .where(`${relation}.${model}Id = ${model}.id`)
+    .from(`${relation}s`, relation)
+    .toString();
+  return `(${quote(query)})`;
 };
 
 const GENERATED_COUNT = subQuery({
   field: `CAST(COUNT(*) AS int)`,
-  parent: `basket`,
+  model: `basket`,
   relation: `item`
 });
 
 const GENERATED_SUM = subQuery({
   field: `SUM(item.price)`,
-  parent: `basket`,
+  model: `basket`,
   relation: `item`
 });
 
-router.get(`/generated-sub-queries`, async (ctx, next) => {
+router.get(`/baskets/generated-squel`, async (ctx, next) => {
   const { Basket } = ctx;
   const basket = await Basket.findAll({
     attributes: {

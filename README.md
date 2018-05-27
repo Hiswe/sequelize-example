@@ -25,11 +25,9 @@ a small sequelize example with sub-queries
 yarn install && yarn start
 ```
 
-got to:
+All routes will render the same result but handled in a different way :)
 
-http://localhost:3000
-
-and 
-
-http://localhost:3000/count-and-sum
+http://localhost:3000/baskets
+http://localhost:3000/baskets/squel
+http://localhost:3000/baskets/generated-squel
 
