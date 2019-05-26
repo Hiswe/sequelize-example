@@ -27,9 +27,9 @@ yarn install && yarn start
 
 All routes will render the same result but handled in a different way :)
 
-http://localhost:3000/baskets
-http://localhost:3000/baskets/squel
-http://localhost:3000/baskets/generated-squel
+- http://localhost:3000/baskets
+- http://localhost:3000/baskets/squel
+- http://localhost:3000/baskets/generated-squel
 
 ## tweaking the configuration
 
